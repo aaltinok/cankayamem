@@ -28,6 +28,9 @@ st.set_page_config(
 # ============================================
 # KARANLIK BİLİMSEL TEMA (DÜZELTİLDİ)
 # ============================================
+# ============================================
+# KARANLIK BİLİMSEL TEMA (SON - KESİN)
+# ============================================
 st.markdown("""
 <style>
 .stApp { background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1128 100%); }
@@ -38,7 +41,7 @@ st.markdown("""
     border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden;
 }
 .main-header::before {
-    content: ''; position: absolute; top: -50%; left: -50%;
+    content: ; position: absolute; top: -50%; left: -50%;
     width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
     animation: rotate 20s linear infinite;
@@ -52,7 +55,7 @@ st.markdown("""
     transition: all 0.3s ease; position: relative; overflow: hidden;
 }
 .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(26, 35, 126, 0.5); border-color: rgba(255, 255, 255, 0.3); }
-.stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
+.stat-card::after { content: ; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
 .stat-value { font-size: 2.5rem; font-weight: 800; color: #e8eaf6; text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
 .stat-label { font-size: 0.9rem; color: #9fa8da; text-transform: uppercase; letter-spacing: 1px; }
 .badge-excess { background: linear-gradient(135deg, #c62828, #d32f2f); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4); }
@@ -66,19 +69,19 @@ st.markdown("""
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 .stProgress > div > div > div { background: linear-gradient(90deg, #667eea, #764ba2); }
 .stSelectbox, .stTextInput, .stSlider { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-.stTabs [data-baseweb="tab-list"] { gap: 10px; background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 0.5rem; }
-.stTabs [data-baseweb="tab"] { background: transparent; border-radius: 10px; color: #9fa8da; padding: 0.5rem 1.5rem; transition: all 0.3s; }
-.stTabs [aria-selected="true"] { background: linear-gradient(135deg, #667eea, #764ba2); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+.stTabs [data-baseweb=tab-list] { gap: 10px; background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 0.5rem; }
+.stTabs [data-baseweb=tab] { background: transparent; border-radius: 10px; color: #9fa8da; padding: 0.5rem 1.5rem; transition: all 0.3s; }
+.stTabs [aria-selected=true] { background: linear-gradient(135deg, #667eea, #764ba2); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
 .school-link { color: #82b1ff; text-decoration: none; transition: all 0.3s; }
 .school-link:hover { color: #b388ff; text-shadow: 0 0 10px rgba(179, 136, 255, 0.5); }
 .footer { text-align: center; color: #5c6bc0; padding: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 2rem; }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%); border-right: 1px solid rgba(255, 255, 255, 0.1); }
-[data-testid="stSidebar"] * { color: #e8eaf6 !important; }
-[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { color: #ffffff !important; }
-[data-testid="stSidebar"] .stSelectbox select, [data-testid="stSidebar"] input { background: rgba(255, 255, 255, 0.08); color: #e8eaf6 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
-[data-testid="stSidebar"] .stButton button { background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; border-radius: 10px !important; }
-[data-testid="stSidebar"] .stMetric .stMetricValue { color: #ffffff !important; font-weight: 700; }
-[data-testid="stSidebar"] .stMetric .stMetricLabel { color: #9fa8da !important; }
+[data-testid=stSidebar] { background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%); border-right: 1px solid rgba(255, 255, 255, 0.1); }
+[data-testid=stSidebar] * { color: #e8eaf6 !important; }
+[data-testid=stSidebar] h1, [data-testid=stSidebar] h2, [data-testid=stSidebar] h3 { color: #ffffff !important; }
+[data-testid=stSidebar] .stSelectbox select, [data-testid=stSidebar] input { background: rgba(255, 255, 255, 0.08); color: #e8eaf6 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
+[data-testid=stSidebar] .stButton button { background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; border-radius: 10px !important; }
+[data-testid=stSidebar] .stMetric .stMetricValue { color: #ffffff !important; font-weight: 700; }
+[data-testid=stSidebar] .stMetric .stMetricLabel { color: #9fa8da !important; }
 </style>
 """, unsafe_allow_html=True)
 
