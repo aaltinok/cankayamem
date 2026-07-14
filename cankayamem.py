@@ -319,4 +319,342 @@ with tab2:
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
     else:
-        st.warning("⚠️ Seçili filtrel
+        st.warning("⚠️ Seçili filtrelerde okul bulunamadı.")
+
+# ============================================
+# TAB 3: BRANŞ ANALİZİ (AYNI)
+# ============================================
+with tab3:
+    st.markdown("## 👨‍🏫 Branş Bazında Norm Fazlası Analizi")
+    branch_summary = filtered_df.groupby('brans_adi').agg({'norm_sayisi': 'sum', 'mevcut_ogretmen': 'sum', 'norm_fazlasi_sayisi': 'sum', 'norm_eksigi_sayisi': 'sum', 'okul_id': 'nunique'}).reset_index()
+    branch_summary.columns = ['Branş', 'Toplam Norm', 'Toplam Öğretmen', 'Norm Fazlası', 'Norm Eksiği', 'Okul Sayısı']
+    branch_summary['Fark'] = branch_summary['Toplam Öğretmen'] - branch_summary['Toplam Norm']
+    
+    st.markdown("### 🔴 En Fazla Norm Fazlası Olan Branşlar")
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+    top_excess = branch_summary.nlargest(15, 'Norm Fazlası')
+    fig = px.bar(top_excess, x='Branş', y='Norm Fazlası', title='Norm Fazlası Öğretmen Sayısı (İlk 15 Branş)', color='Norm Fazlası', color_continuous_scale='Reds', text='Norm Fazlası')
+    fig.update_traces(textposition='outside', textfont=dict(color='#ff5252', size=11))
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#e8eaf6'), title_font=dict(color='#e8eaf6', size=16), xaxis=dict(tickangle=-45, gridcolor='rgba(255,255,255,0.05)'), yaxis=dict(gridcolor='rgba(255,255,255,0.05)'), coloraxis_showscale=False, height=500)
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ============================================
+# TAB 4: NORM FAZLASI (GÜNCELLENDİ)
+# ============================================
+with tab4:
+    st.markdown("## ⚠️ Norm Fazlası Öğretmenler ve Hizmet Puanları")
+    
+    excess_data = filtered_df[filtered_df['norm_durumu'] == 'Norm Fazlası']
+    
+    if not excess_data.empty:
+        # Hizmet Puanı Filtresi
+        st.markdown("### 🔍 Hizmet Puanı Filtresi")
+        min_puan = int(excess_data['ortalama_hizmet_puani'].min())
+        max_puan = int(excess_data['ortalama_hizmet_puani'].max())
+        puan_range = st.slider('Hizmet Puanı Aralığı:', min_puan, max_puan, (min_puan, max_puan), key='puan_range')
+        
+        filtered_excess = excess_data[
+            (excess_data['ortalama_hizmet_puani'] >= puan_range[0]) & 
+            (excess_data['ortalama_hizmet_puani'] <= puan_range[1])
+        ]
+        
+        # İstatistikler
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("🔴 Toplam Norm Fazlası", len(filtered_excess))
+        with col2:
+            st.metric("📊 Ortalama Hizmet Puanı", f"{filtered_excess['ortalama_hizmet_puani'].mean():.0f}")
+        with col3:
+            st.metric("⬆️ En Yüksek Puan", filtered_excess['ortalama_hizmet_puani'].max())
+        with col4:
+            st.metric("⬇️ En Düşük Puan", filtered_excess['ortalama_hizmet_puani'].min())
+        
+        # Norm Fazlası Tablosu
+        st.markdown("### 📋 Norm Fazlası Öğretmen Listesi")
+        display_excess = filtered_excess[['okul_adi', 'okul_turu', 'brans_adi', 'norm_fazlasi_sayisi', 'ortalama_hizmet_puani', 'derslik_sayisi']].copy()
+        display_excess.columns = ['Okul Adı', 'Okul Türü', 'Branş', 'Fazla Sayısı', 'Ort. Hizmet Puanı', 'Derslik']
+        display_excess = display_excess.sort_values('Ort. Hizmet Puanı', ascending=True)
+        st.dataframe(display_excess, use_container_width=True, hide_index=True, height=400)
+        
+        # Grafikler
+        st.markdown("### 📊 Hizmet Puanı Dağılımı")
+        col1, col2 = st.columns(2)
+        with col1:
+            fig = px.histogram(filtered_excess, x='ortalama_hizmet_puani', nbins=20, title='Hizmet Puanı Dağılımı', color_discrete_sequence=['#ff5252'])
+            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#e8eaf6'), height=400)
+            st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            branch_excess = filtered_excess.groupby('brans_adi')['norm_fazlasi_sayisi'].sum().nlargest(10)
+            fig = px.pie(values=branch_excess.values, names=branch_excess.index, title='Branşlara Göre Norm Fazlası', hole=0.4, color_discrete_sequence=px.colors.sequential.Reds_r)
+            fig.update_traces(textposition='inside', textinfo='percent+label', textfont=dict(color='white', size=10))
+            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#e8eaf6'), height=400)
+            st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("ℹ️ Seçili filtrelerde norm fazlası öğretmen bulunmamaktadır.")
+
+# ============================================
+# TAB 5: RAPORLAR (AYNI)
+# ============================================
+with tab5:
+    st.markdown("## 📈 Detaylı Raporlar ve İstatistiksel Analizler")
+    
+    type_report = filtered_df.groupby('okul_turu').agg({
+        'okul_id': 'nunique',
+        'norm_sayisi': 'sum',
+        'mevcut_ogretmen': 'sum',
+        'norm_fazlasi_sayisi': 'sum',
+        'norm_eksigi_sayisi': 'sum',
+        'ortalama_hizmet_puani': 'mean'
+    }).round(1)
+    type_report.columns = ['Okul Sayısı', 'Toplam Norm', 'Toplam Öğretmen', 'Norm Fazlası', 'Norm Eksiği', 'Ort. Hizmet Puanı']
+    type_report['Doluluk Oranı (%)'] = (type_report['Toplam Öğretmen'] / type_report['Toplam Norm'] * 100).round(1)
+    st.dataframe(type_report, use_container_width=True)
+    
+    # İndirme butonu
+    csv = type_report.to_csv()
+    st.download_button("📥 Raporu CSV Olarak İndir", data=csv, file_name=f"norm_raporu_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv")
+
+# ============================================
+# TAB 6: OKUL LİNKLERİ (AYNI)
+# ============================================
+with tab6:
+    st.markdown("## 🔗 Okul Web Siteleri ve Teşkilat Sayfaları")
+    school_list = filtered_df[['okul_adi', 'okul_turu']].drop_duplicates()
+    school_list = school_list.sort_values(['okul_turu', 'okul_adi'])
+    
+    selected_link_type = st.selectbox('Okul Türüne Göre Filtrele:', ['Tümü'] + sorted(school_list['okul_turu'].unique().tolist()))
+    if selected_link_type != 'Tümü':
+        school_list = school_list[school_list['okul_turu'] == selected_link_type]
+    
+    for idx, row in school_list.iterrows():
+        school_name = row['okul_adi']
+        school_type = row['okul_turu']
+        slug = school_name.lower().replace(' ', '').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c')
+        website_url = f"https://{slug}.meb.k12.tr"
+        teskilat_url = f"https://{slug}.meb.k12.tr/tema/teskilat.php"
+        st.markdown(f"""
+        <div style="background: rgba(26,35,126,0.2); border: 1px solid rgba(255,255,255,0.1); 
+                    border-radius: 10px; padding: 1rem; margin: 0.5rem 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div><strong style="color: #e8eaf6; font-size: 1.1rem;">{school_name}</strong>
+                <span style="color: #9fa8da; margin-left: 1rem;">({school_type})</span></div>
+                <div>
+                    <a href="{website_url}" target="_blank" style="color: #82b1ff; text-decoration: none; margin-right: 1rem;
+                       padding: 0.3rem 0.8rem; border: 1px solid #82b1ff; border-radius: 15px; font-size: 0.85rem;">🌐 Web Sitesi</a>
+                    <a href="{teskilat_url}" target="_blank" style="color: #b388ff; text-decoration: none;
+                       padding: 0.3rem 0.8rem; border: 1px solid #b388ff; border-radius: 15px; font-size: 0.85rem;">👨‍🏫 Teşkilat</a>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================
+# TAB 7: GÖREVLENDİRME (GELİŞTİRİLMİŞ - ANA AMAÇ)
+# ============================================
+with tab7:
+    st.markdown("## 🔄 Norm Fazlası Öğretmen Görevlendirme Sistemi")
+    st.markdown("""
+    <div style="background: rgba(255,82,82,0.2); border: 1px solid rgba(255,82,82,0.5); 
+                border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+        <h4 style="color: #ff5252; margin: 0;">⚠️ SİSTEM AMACI:</h4>
+        <p style="color: #ffcdd2; margin: 0.5rem 0 0 0;">
+            Norm fazlası öğretmenler, <strong>hizmet puanı en düşük</strong> olanlardan başlayarak 
+            <strong>norm eksiği</strong> olan okullara otomatik olarak görevlendirilir.
+            Sistem, adil ve şeffaf dağıtım sağlar.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Görevlendirme Verilerini Hazırla
+    def prepare_assignment_data(df):
+        """Norm fazlası ve norm eksiği verilerini hazırla"""
+        
+        # Norm fazlası olan okul-branş kombinasyonları
+        excess_data = df[df['norm_durumu'] == 'Norm Fazlası'].copy()
+        excess_summary = excess_data.groupby(['okul_adi', 'okul_turu', 'brans_adi']).agg({
+            'norm_fazlasi_sayisi': 'sum',
+            'ortalama_hizmet_puani': 'mean',
+            'derslik_sayisi': 'first'
+        }).reset_index()
+        excess_summary = excess_summary[excess_summary['norm_fazlasi_sayisi'] > 0]
+        excess_summary = excess_summary.sort_values('ortalama_hizmet_puani', ascending=True)
+        
+        # Norm eksiği olan okul-branş kombinasyonları
+        deficit_data = df[df['norm_durumu'] == 'Norm Eksiği'].copy()
+        deficit_summary = deficit_data.groupby(['okul_adi', 'okul_turu', 'brans_adi']).agg({
+            'norm_eksigi_sayisi': 'sum',
+            'ortalama_hizmet_puani': 'mean',
+            'derslik_sayisi': 'first'
+        }).reset_index()
+        deficit_summary = deficit_summary[deficit_summary['norm_eksigi_sayisi'] > 0]
+        deficit_summary = deficit_summary.sort_values('norm_eksigi_sayisi', ascending=False)
+        
+        return excess_summary, deficit_summary
+    
+    excess_summary, deficit_summary = prepare_assignment_data(filtered_df)
+    
+    # Görevlendirme Algoritması
+    def match_excess_to_deficit(excess_df, deficit_df):
+        """Norm fazlası öğretmenleri norm eksiği okullara eşleştir"""
+        assignments = []
+        
+        # Branş bazında eşleştirme
+        for brans in excess_df['brans_adi'].unique():
+            brans_excess = excess_df[excess_df['brans_adi'] == brans].copy()
+            brans_deficit = deficit_df[deficit_df['brans_adi'] == brans].copy()
+            
+            if brans_excess.empty or brans_deficit.empty:
+                continue
+            
+            # En düşük hizmet puanlı öğretmen önce görevlendirilir
+            brans_excess = brans_excess.sort_values('ortalama_hizmet_puani', ascending=True)
+            brans_deficit = brans_deficit.sort_values('norm_eksigi_sayisi', ascending=False)
+            
+            # İlerleme durumu
+            excess_idx = 0
+            deficit_idx = 0
+            
+            while excess_idx < len(brans_excess) and deficit_idx < len(brans_deficit):
+                teacher = brans_excess.iloc[excess_idx]
+                school = brans_deficit.iloc[deficit_idx]
+                
+                # Ne kadar görevlendirilebileceğini hesapla
+                assign_count = min(teacher['norm_fazlasi_sayisi'], school['norm_eksigi_sayisi'])
+                
+                if assign_count > 0:
+                    assignments.append({
+                        'kaynak_okul': teacher['okul_adi'],
+                        'kaynak_okul_turu': teacher['okul_turu'],
+                        'hedef_okul': school['okul_adi'],
+                        'hedef_okul_turu': school['okul_turu'],
+                        'brans_adi': brans,
+                        'görevlendirilecek_sayı': assign_count,
+                        'kaynak_ortalama_puan': teacher['ortalama_hizmet_puani'],
+                        'hedef_derslik': school['derslik_sayisi'],
+                        'durum': '✅ Görevlendirme Önerisi'
+                    })
+                    
+                    # Kalanları güncelle
+                    brans_excess.at[brans_excess.index[excess_idx], 'norm_fazlasi_sayisi'] -= assign_count
+                    brans_deficit.at[brans_deficit.index[deficit_idx], 'norm_eksigi_sayisi'] -= assign_count
+                
+                # Sıradaki öğretmene veya okula geç
+                if brans_excess.iloc[excess_idx]['norm_fazlasi_sayisi'] == 0:
+                    excess_idx += 1
+                if brans_deficit.iloc[deficit_idx]['norm_eksigi_sayisi'] == 0:
+                    deficit_idx += 1
+        
+        return pd.DataFrame(assignments)
+    
+    # Görevlendirmeyi çalıştır
+    if not excess_summary.empty and not deficit_summary.empty:
+        assignments_df = match_excess_to_deficit(excess_summary, deficit_summary)
+        
+        if not assignments_df.empty:
+            # Özet kartlar
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("🔄 Toplam Görevlendirme", len(assignments_df))
+            with col2:
+                st.metric("👨‍🏫 Görevlendirilecek Öğretmen", assignments_df['görevlendirilecek_sayı'].sum())
+            with col3:
+                st.metric("🏫 Hedef Okul Sayısı", assignments_df['hedef_okul'].nunique())
+            with col4:
+                st.metric("📚 Branş Sayısı", assignments_df['brans_adi'].nunique())
+            
+            st.markdown("---")
+            
+            # Görevlendirme listesi
+            st.markdown("### 📋 Görevlendirme Listesi")
+            st.dataframe(assignments_df, use_container_width=True, hide_index=True, height=400)
+            
+            # Detaylı kart görünümü
+            st.markdown("### 📋 Görevlendirme Detayları")
+            for idx, row in assignments_df.iterrows():
+                st.markdown(f"""
+                <div style="background: rgba(26,35,126,0.3); border: 1px solid rgba(255,255,255,0.1); 
+                            border-radius: 10px; padding: 1rem; margin: 0.5rem 0;
+                            border-left: 4px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #e8eaf6; font-size: 1.1rem;">
+                                {row['brans_adi']} - {row['görevlendirilecek_sayı']} öğretmen
+                            </strong>
+                            <span style="color: #9fa8da; margin-left: 1rem;">
+                                Ort. Puan: {row['kaynak_ortalama_puan']:.0f}
+                            </span>
+                        </div>
+                        <span style="color: #69f0ae;">{row['durum']}</span>
+                    </div>
+                    <div style="margin-top: 0.5rem; color: #9fa8da;">
+                        <span>🏫 <strong>Kaynak:</strong> {row['kaynak_okul']} ({row['kaynak_okul_turu']})</span>
+                        <span style="margin-left: 2rem;">➡️</span>
+                        <span style="margin-left: 2rem;">🏫 <strong>Hedef:</strong> {row['hedef_okul']} ({row['hedef_okul_turu']})</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # İndirme Butonu
+            csv = assignments_df.to_csv(index=False)
+            st.download_button(
+                "📥 Görevlendirme Listesini CSV Olarak İndir",
+                data=csv,
+                file_name=f"gorevlendirme_listesi_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv"
+            )
+            
+            # Özet Grafik
+            st.markdown("### 📊 Görevlendirme Özeti")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Branş bazında görevlendirme
+                branch_assign = assignments_df.groupby('brans_adi')['görevlendirilecek_sayı'].sum().reset_index()
+                fig = px.bar(branch_assign, x='brans_adi', y='görevlendirilecek_sayı', 
+                           title='Branşlara Göre Görevlendirilecek Öğretmen Sayısı',
+                           color='görevlendirilecek_sayı', color_continuous_scale='Viridis')
+                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                                 font=dict(color='#e8eaf6'), height=400)
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Kaynak-Hedef okul dağılımı
+                source_count = assignments_df['kaynak_okul'].value_counts().head(10)
+                fig = px.bar(x=source_count.values, y=source_count.index, orientation='h',
+                           title='En Çok Öğretmen Gönderen Okullar',
+                           color=source_count.values, color_continuous_scale='Reds')
+                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                                 font=dict(color='#e8eaf6'), height=400,
+                                 xaxis_title='Görevlendirme Sayısı', yaxis_title='Okul')
+                st.plotly_chart(fig, use_container_width=True)
+            
+        else:
+            st.info("ℹ️ Mevcut verilerle görevlendirme yapılamıyor. Branş eşleşmesi bulunamadı.")
+    else:
+        if excess_summary.empty:
+            st.warning("⚠️ Norm fazlası öğretmen bulunamadı!")
+        if deficit_summary.empty:
+            st.warning("⚠️ Norm eksiği olan okul bulunamadı!")
+        
+        st.info("💡 İpucu: Farklı filtreler deneyerek verileri değiştirebilirsiniz.")
+
+# ============================================
+# FOOTER
+# ============================================
+st.markdown("---")
+st.markdown(f"""
+<div class="footer">
+    <p><strong>Çankaya İlçe Milli Eğitim Müdürlüğü</strong></p>
+    <p>Norm Fazlası Öğretmen Dağılım ve Takip Sistemi | Versiyon 2.0</p>
+    <p>© {datetime.now().year} | Tüm hakları saklıdır.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# ============================================
+# BAŞLANGIÇ BİLDİRİMİ
+# ============================================
+if 'initialized' not in st.session_state:
+    st.session_state.initialized = True
+    st.toast('✅ Sistem başarıyla başlatıldı!', icon='🚀')
+    st.toast(f'📊 {df["okul_id"].nunique()} okul ve {df["brans_adi"].nunique()} branş yüklendi.', icon='📚')
