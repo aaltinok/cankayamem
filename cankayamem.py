@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ============================================
-# KARANLIK BİLİMSEL TEMA (DÜZELTİLMİŞ)
+# KARANLIK BİLİMSEL TEMA (DÜZELTİLDİ)
 # ============================================
 st.markdown("""
 <style>
@@ -81,6 +81,7 @@ st.markdown("""
 [data-testid="stSidebar"] .stMetric .stMetricLabel { color: #9fa8da !important; }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ============================================
 # SUPABASE BAĞLANTISI
