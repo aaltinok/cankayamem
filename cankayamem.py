@@ -24,166 +24,65 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-
-        backdrop-filter: blur(10px);
-        ;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(245, 127, 23, 0.4);
-    }
-    
-    /* Filtre Paneli */
-    .filter-panel {
-        background: rgba(26, 35, 126, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1.5rem;
-        backdrop-filter: blur(10px);
-    }
-    .filter-title {
-        color: #e8eaf6;
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid rgba(102, 126, 234, 0.5);
-        padding-bottom: 0.5rem;
-    }
-    
-    /* Tablo Stilleri */
-    .dataframe-container {
-        background: rgba(26, 35, 126, 0.2);
-        border-radius: 15px;
-        padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Grafik Konteyner */
-    .chart-container {
-        background: rgba(26, 35, 126, 0.15);
-        border-radius: 15px;
-        padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        margin: 1rem 0;
-    }
-    
-    /* Senkronizasyon Badge */
-    .sync-badge {
-        background: linear-gradient(135deg, #00c853, #00e676);
-        color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
-    }
-    
-    /* İlerleme Çubuğu */
-    .stProgress > div > div > div {
-        background: linear-gradient(90deg, #667eea, #764ba2);
-    }
-    
-    /* Selectbox ve Input */
-    .stSelectbox, .stTextInput, .stSlider {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-    }
-    
-    /* Tab Stilleri */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        background: rgba(26, 35, 126, 0.2);
-        border-radius: 15px;
-        padding: 0.5rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background: transparent;
-        border-radius: 10px;
-        color: #9fa8da;
-        padding: 0.5rem 1.5rem;
-        transition: all 0.3s;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-    
-    /* Okul Link Stilleri */
-    .school-link {
 # ============================================
-# KARANLIK BİLİMSEL TEMA (DÜZELTİLMİŞ)
+# KARANLIK BİLİMSEL TEMA (DÜZELTİLMİŞ - GİRİNTİSİZ)
 # ============================================
 st.markdown("""
 <style>
-    .stApp {
-        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1128 100%);
-    }
-    .main-header {
-        background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%);
-        color: #e8eaf6; text-align: center; padding: 2rem; border-radius: 15px;
-        margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(26, 35, 126, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden;
-    }
-    .main-header::before {
-        content: ''; position: absolute; top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-        animation: rotate 20s linear infinite;
-    }
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    .main-header h1 { position: relative; z-index: 1; font-size: 2.2rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
-    
-    .stat-card {
-        background: linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(40, 53, 147, 0.3) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 1.5rem;
-        text-align: center; backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease; position: relative; overflow: hidden;
-    }
-    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(26, 35, 126, 0.5); border-color: rgba(255, 255, 255, 0.3); }
-    .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
-    .stat-value { font-size: 2.5rem; font-weight: 800; color: #e8eaf6; text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
-    .stat-label { font-size: 0.9rem; color: #9fa8da; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .badge-excess { background: linear-gradient(135deg, #c62828, #d32f2f); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4); }
-    .badge-deficit { background: linear-gradient(135deg, #2e7d32, #388e3c); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(46, 125, 50, 0.4); }
-    .badge-normal { background: linear-gradient(135deg, #f57f17, #f9a825); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(245, 127, 23, 0.4); }
-    
-    .filter-panel { background: rgba(26, 35, 126, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 1.5rem; backdrop-filter: blur(10px); }
-    .filter-title { color: #e8eaf6; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 2px solid rgba(102, 126, 234, 0.5); padding-bottom: 0.5rem; }
-    
-    .dataframe-container { background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .chart-container { background: rgba(26, 35, 126, 0.15); border-radius: 15px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08); margin: 1rem 0; }
-    
-    .sync-badge { background: linear-gradient(135deg, #00c853, #00e676); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-    
-    .stProgress > div > div > div { background: linear-gradient(90deg, #667eea, #764ba2); }
-    .stSelectbox, .stTextInput, .stSlider { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-    
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 0.5rem; }
-    .stTabs [data-baseweb="tab"] { background: transparent; border-radius: 10px; color: #9fa8da; padding: 0.5rem 1.5rem; transition: all 0.3s; }
-    .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #667eea, #764ba2); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
-    
-    .school-link { color: #82b1ff; text-decoration: none; transition: all 0.3s; }
-    .school-link:hover { color: #b388ff; text-shadow: 0 0 10px rgba(179, 136, 255, 0.5); }
-    
-    .footer { text-align: center; color: #5c6bc0; padding: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 2rem; }
-    
-    [data-testid="stSidebar"] { background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%); border-right: 1px solid rgba(255, 255, 255, 0.1); }
-    [data-testid="stSidebar"] * { color: #e8eaf6 !important; }
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { color: #ffffff !important; }
-    [data-testid="stSidebar"] .stSelectbox select, [data-testid="stSidebar"] input { background: rgba(255, 255, 255, 0.08); color: #e8eaf6 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
-    [data-testid="stSidebar"] .stButton button { background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; border-radius: 10px !important; }
-    [data-testid="stSidebar"] .stMetric .stMetricValue { color: #ffffff !important; font-weight: 700; }
-    [data-testid="stSidebar"] .stMetric .stMetricLabel { color: #9fa8da !important; }
+.stApp {
+background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1128 100%);
+}
+.main-header {
+background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%);
+color: #e8eaf6; text-align: center; padding: 2rem; border-radius: 15px;
+margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(26, 35, 126, 0.3);
+border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden;
+}
+.main-header::before {
+content: ''; position: absolute; top: -50%; left: -50%;
+width: 200%; height: 200%;
+background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+animation: rotate 20s linear infinite;
+}
+@keyframes rotate {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
+}
+.main-header h1 { position: relative; z-index: 1; font-size: 2.2rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+.stat-card {
+background: linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(40, 53, 147, 0.3) 100%);
+border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 1.5rem;
+text-align: center; backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(26, 35, 126, 0.5); border-color: rgba(255, 255, 255, 0.3); }
+.stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
+.stat-value { font-size: 2.5rem; font-weight: 800; color: #e8eaf6; text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+.stat-label { font-size: 0.9rem; color: #9fa8da; text-transform: uppercase; letter-spacing: 1px; }
+.badge-excess { background: linear-gradient(135deg, #c62828, #d32f2f); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4); }
+.badge-deficit { background: linear-gradient(135deg, #2e7d32, #388e3c); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(46, 125, 50, 0.4); }
+.badge-normal { background: linear-gradient(135deg, #f57f17, #f9a825); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(245, 127, 23, 0.4); }
+.filter-panel { background: rgba(26, 35, 126, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 1.5rem; backdrop-filter: blur(10px); }
+.filter-title { color: #e8eaf6; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 2px solid rgba(102, 126, 234, 0.5); padding-bottom: 0.5rem; }
+.dataframe-container { background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); }
+.chart-container { background: rgba(26, 35, 126, 0.15); border-radius: 15px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08); margin: 1rem 0; }
+.sync-badge { background: linear-gradient(135deg, #00c853, #00e676); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.stProgress > div > div > div { background: linear-gradient(90deg, #667eea, #764ba2); }
+.stSelectbox, .stTextInput, .stSlider { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+.stTabs [data-baseweb="tab-list"] { gap: 10px; background: rgba(26, 35, 126, 0.2); border-radius: 15px; padding: 0.5rem; }
+.stTabs [data-baseweb="tab"] { background: transparent; border-radius: 10px; color: #9fa8da; padding: 0.5rem 1.5rem; transition: all 0.3s; }
+.stTabs [aria-selected="true"] { background: linear-gradient(135deg, #667eea, #764ba2); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+.school-link { color: #82b1ff; text-decoration: none; transition: all 0.3s; }
+.school-link:hover { color: #b388ff; text-shadow: 0 0 10px rgba(179, 136, 255, 0.5); }
+.footer { text-align: center; color: #5c6bc0; padding: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 2rem; }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%); border-right: 1px solid rgba(255, 255, 255, 0.1); }
+[data-testid="stSidebar"] * { color: #e8eaf6 !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { color: #ffffff !important; }
+[data-testid="stSidebar"] .stSelectbox select, [data-testid="stSidebar"] input { background: rgba(255, 255, 255, 0.08); color: #e8eaf6 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
+[data-testid="stSidebar"] .stButton button { background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; border-radius: 10px !important; }
+[data-testid="stSidebar"] .stMetric .stMetricValue { color: #ffffff !important; font-weight: 700; }
+[data-testid="stSidebar"] .stMetric .stMetricLabel { color: #9fa8da !important; }
 </style>
 """, unsafe_allow_html=True)
 
