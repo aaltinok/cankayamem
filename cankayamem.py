@@ -4,49 +4,16 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime
+from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-# ============================================
-# SUPABASE BAĞLANTISI
-# ============================================
+# Supabase bağlantısı
 try:
     from supabase import create_client
     SUPABASE_AVAILABLE = True
 except ImportError:
     SUPABASE_AVAILABLE = False
-
-@st.cache_resource
-def init_supabase():
-    if not SUPABASE_AVAILABLE:
-        return None
-    try:
-        supabase_url = st.secrets.get("SUPABASE_URL", "")
-        supabase_key = st.secrets.get("SUPABASE_KEY", "")
-        if not supabase_url or not supabase_key:
-            return None
-        return create_client(supabase_url, supabase_key)
-    except:
-        return None
-
-supabase = init_supabase()
-
-@st.cache_data(ttl=300)
-def load_norm_data():
-    if supabase is None:
-        return pd.DataFrame()
-    try:
-        response = supabase.table('norm_durumu_gorunumu').select('*').execute()
-        return pd.DataFrame(response.data)
-    except:
-        return pd.DataFrame()
-
-df = load_norm_data()
-
-if df.empty:
-    st.warning("⚠️ Veri bulunamadı! Lütfen Supabase bağlantısını kontrol edin.")
-    st.stop()
 
 # ============================================
 # SAYFA YAPILANDIRMASI
@@ -59,14 +26,16 @@ st.set_page_config(
 )
 
 # ============================================
-# KARANLIK BİLİMSEL TEMA (ANİMASYONSUZ)
+# KARANLIK BİLİMSEL TEMA
 # ============================================
 st.markdown("""
 <style>
+    /* Ana Tema */
     .stApp {
         background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1128 100%);
     }
     
+    /* Header */
     .main-header {
         background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%);
         color: #e8eaf6;
@@ -75,55 +44,49 @@ st.markdown("""
         border-radius: 15px;
         margin-bottom: 2rem;
         box-shadow: 0 8px 32px rgba(26, 35, 126, 0.3);
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         position: relative;
         overflow: hidden;
     }
     .main-header::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 0%, transparent 70%);
-        pointer-events: none;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
     .main-header h1 {
         position: relative;
         z-index: 1;
         font-size: 2.2rem;
         font-weight: 700;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-    .main-header h2 {
-        position: relative;
-        z-index: 1;
-        font-size: 1.5rem;
-        color: #9fa8da;
-    }
-    .main-header p {
-        position: relative;
-        z-index: 1;
-        color: #7986cb;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
     
+    /* Kartlar */
     .stat-card {
-        background: linear-gradient(135deg, rgba(26,35,126,0.4) 0%, rgba(40,53,147,0.3) 100%);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(40, 53, 147, 0.3) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 15px;
         padding: 1.5rem;
         text-align: center;
         backdrop-filter: blur(10px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(26,35,126,0.5);
-        border-color: rgba(255,255,255,0.3);
+        box-shadow: 0 8px 25px rgba(26, 35, 126, 0.5);
+        border-color: rgba(255, 255, 255, 0.3);
     }
     .stat-card::after {
         content: '';
@@ -138,7 +101,7 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: 800;
         color: #e8eaf6;
-        text-shadow: 0 0 20px rgba(102,126,234,0.5);
+        text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
     }
     .stat-label {
         font-size: 0.9rem;
@@ -147,9 +110,39 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
+    /* Durum Badge'leri */
+    .badge-excess {
+        background: linear-gradient(135deg, #c62828, #d32f2f);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4);
+    }
+    .badge-deficit {
+        background: linear-gradient(135deg, #2e7d32, #388e3c);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.4);
+    }
+    .badge-normal {
+        background: linear-gradient(135deg, #f57f17, #f9a825);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(245, 127, 23, 0.4);
+    }
+    
+    /* Filtre Paneli */
     .filter-panel {
-        background: rgba(26,35,126,0.2);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(26, 35, 126, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 15px;
         padding: 1.5rem;
         backdrop-filter: blur(10px);
@@ -159,30 +152,96 @@ st.markdown("""
         font-size: 1.2rem;
         font-weight: 700;
         margin-bottom: 1rem;
-        border-bottom: 2px solid rgba(102,126,234,0.5);
+        border-bottom: 2px solid rgba(102, 126, 234, 0.5);
         padding-bottom: 0.5rem;
     }
     
-    .chart-container {
-        background: rgba(26,35,126,0.15);
+    /* Tablo Stilleri */
+    .dataframe-container {
+        background: rgba(26, 35, 126, 0.2);
         border-radius: 15px;
         padding: 1rem;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Grafik Konteyner */
+    .chart-container {
+        background: rgba(26, 35, 126, 0.15);
+        border-radius: 15px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         margin: 1rem 0;
     }
     
+    /* Senkronizasyon Badge */
+    .sync-badge {
+        background: linear-gradient(135deg, #00c853, #00e676);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    
+    /* İlerleme Çubuğu */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    /* Selectbox ve Input */
+    .stSelectbox, .stTextInput, .stSlider {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    
+    /* Tab Stilleri */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background: rgba(26, 35, 126, 0.2);
+        border-radius: 15px;
+        padding: 0.5rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 10px;
+        color: #9fa8da;
+        padding: 0.5rem 1.5rem;
+        transition: all 0.3s;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Okul Link Stilleri */
+    .school-link {
+        color: #82b1ff;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .school-link:hover {
+        color: #b388ff;
+        text-shadow: 0 0 10px rgba(179, 136, 255, 0.5);
+    }
+    
+    /* Footer */
     .footer {
         text-align: center;
         color: #5c6bc0;
         padding: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
         margin-top: 2rem;
     }
-    
+
     /* Sidebar Karanlık Tema */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%);
-        border-right: 1px solid rgba(255,255,255,0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
     [data-testid="stSidebar"] * {
         color: #e8eaf6 !important;
@@ -191,9 +250,9 @@ st.markdown("""
         color: #ffffff !important;
     }
     [data-testid="stSidebar"] .stSelectbox select, [data-testid="stSidebar"] input {
-        background: rgba(255,255,255,0.08);
+        background: rgba(255, 255, 255, 0.08);
         color: #e8eaf6 !important;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 8px;
     }
     [data-testid="stSidebar"] .stButton button {
@@ -209,27 +268,156 @@ st.markdown("""
     [data-testid="stSidebar"] .stMetric .stMetricLabel {
         color: #9fa8da !important;
     }
-    
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        background: rgba(26,35,126,0.2);
-        border-radius: 15px;
-        padding: 0.5rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background: transparent;
-        border-radius: 10px;
-        color: #9fa8da;
-        padding: 0.5rem 1.5rem;
-        transition: all 0.3s;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 4px 15px rgba(102,126,234,0.4);
-    }
 </style>
 """, unsafe_allow_html=True)
+
+# ============================================
+# SUPABASE BAĞLANTISI
+# ============================================
+@st.cache_resource
+def init_supabase():
+    if SUPABASE_AVAILABLE:
+        try:
+            supabase = create_client(
+                st.secrets.get("SUPABASE_URL", ""),
+                st.secrets.get("SUPABASE_KEY", "")
+            )
+            return supabase
+        except:
+            return None
+    return None
+
+supabase = init_supabase()
+
+# ============================================
+# VERİ YÜKLEME FONKSİYONLARI
+# ============================================
+@st.cache_data(ttl=300)
+def load_norm_data():
+    """Norm durumu verilerini yükle"""
+    if supabase:
+        try:
+            response = supabase.table('norm_durumu_gorunumu').select('*').execute()
+            return pd.DataFrame(response.data)
+        except:
+            pass
+    
+    # Demo veri (Supabase yoksa)
+    return generate_demo_data()
+
+@st.cache_data(ttl=300)
+def load_school_summary():
+    """Okul özet verilerini yükle"""
+    if supabase:
+        try:
+            response = supabase.table('okul_ozet_gorunumu').select('*').execute()
+            return pd.DataFrame(response.data)
+        except:
+            pass
+    return None
+
+@st.cache_data(ttl=120)
+def load_excess_teachers():
+    """Norm fazlası öğretmenleri yükle"""
+    if supabase:
+        try:
+            response = supabase.table('norm_fazlasi_ogretmenler').select('*').execute()
+            return pd.DataFrame(response.data)
+        except:
+            pass
+    return pd.DataFrame()
+
+def generate_demo_data():
+    """Demo veri oluştur"""
+    np.random.seed(42)
+    
+    school_types = {
+        'Anaokulu': 15,
+        'İlkokul': 85,
+        'Ortaokul': 65,
+        'OBP ile Öğrenci Alan Anadolu Lisesi': 40,
+        'Çok Programlı Lise': 15,
+        'Meslek Lisesi': 25
+    }
+    
+    branches_by_type = {
+        'Anaokulu': ['Okul Öncesi Öğretmenliği', 'Özel Eğitim', 'Rehberlik', 'İngilizce'],
+        'İlkokul': ['Sınıf Öğretmenliği', 'İngilizce', 'Din Kültürü ve Ahlak Bilgisi', 
+                    'Rehberlik', 'Özel Eğitim', 'Beden Eğitimi', 'Müzik', 
+                    'Görsel Sanatlar', 'Bilişim Teknolojileri', 'Türkçe Öğretici'],
+        'Ortaokul': ['Türkçe', 'Matematik', 'Fen Bilimleri', 'Sosyal Bilgiler', 
+                     'İngilizce', 'Din Kültürü ve Ahlak Bilgisi', 'Beden Eğitimi',
+                     'Teknoloji ve Tasarım', 'Müzik', 'Görsel Sanatlar', 'Rehberlik',
+                     'Bilişim Teknolojileri', 'Özel Eğitim'],
+        'OBP ile Öğrenci Alan Anadolu Lisesi': [
+            'Türk Dili ve Edebiyatı', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji',
+            'Tarih', 'Coğrafya', 'Felsefe', 'İngilizce', 'Almanca', 'Beden Eğitimi',
+            'Din Kültürü ve Ahlak Bilgisi', 'Rehberlik', 'Müzik', 'Görsel Sanatlar',
+            'Bilişim Teknolojileri', 'Sanat Tarihi', 'Sağlık Bilgisi'
+        ],
+        'Çok Programlı Lise': [
+            'Türk Dili ve Edebiyatı', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji',
+            'Tarih', 'Coğrafya', 'Felsefe', 'İngilizce', 'Beden Eğitimi',
+            'Din Kültürü ve Ahlak Bilgisi', 'Rehberlik', 'Bilişim Teknolojileri',
+            'Elektrik-Elektronik Teknolojisi', 'Makine Teknolojisi',
+            'Muhasebe ve Finansman', 'Yiyecek İçecek Hizmetleri',
+            'Çocuk Gelişimi ve Eğitimi', 'Tarım Teknolojileri',
+            'Sanat Tarihi', 'Sağlık Bilgisi'
+        ],
+        'Meslek Lisesi': [
+            'Türk Dili ve Edebiyatı', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji',
+            'Tarih', 'Coğrafya', 'Felsefe', 'İngilizce', 'Beden Eğitimi',
+            'Din Kültürü ve Ahlak Bilgisi', 'Rehberlik', 'Bilişim Teknolojileri',
+            'Elektrik-Elektronik Teknolojisi', 'Makine Teknolojisi',
+            'Muhasebe ve Finansman', 'Yiyecek İçecek Hizmetleri',
+            'Çocuk Gelişimi ve Eğitimi', 'Giyim Üretim Teknolojisi',
+            'Güzellik ve Saç Bakım Hizmetleri', 'Metal Teknolojisi',
+            'Motorlu Araçlar Teknolojisi', 'Tesisat Teknolojisi ve İklimlendirme',
+            'Harita-Tapu-Kadastro', 'Sanat Tarihi', 'Sağlık Bilgisi'
+        ]
+    }
+    
+    data = []
+    school_id = 0
+    
+    for school_type, count in school_types.items():
+        for s in range(count):
+            school_id += 1
+            school_name = f"{school_type} {s+1}. Okul"
+            derslik = np.random.randint(8, 40)
+            
+            for branch in branches_by_type[school_type]:
+                norm = max(1, int(derslik * np.random.uniform(0.5, 2.0)))
+                teachers = norm + np.random.choice([-2, -1, 0, 1, 2, 3], p=[0.1, 0.2, 0.25, 0.2, 0.15, 0.1])
+                teachers = max(0, teachers)
+                
+                if teachers > norm:
+                    norm_status = 'Norm Fazlası'
+                elif teachers < norm:
+                    norm_status = 'Norm Eksiği'
+                else:
+                    norm_status = 'Normal'
+                
+                data.append({
+                    'okul_id': str(school_id),
+                    'okul_adi': school_name,
+                    'okul_turu': school_type,
+                    'brans_adi': branch,
+                    'norm_sayisi': norm,
+                    'mevcut_ogretmen': teachers,
+                    'norm_durumu': norm_status,
+                    'norm_fazlasi_sayisi': max(0, teachers - norm),
+                    'norm_eksigi_sayisi': max(0, norm - teachers),
+                    'ortalama_hizmet_puani': np.random.randint(150, 450),
+                    'derslik_sayisi': derslik
+                })
+    
+    return pd.DataFrame(data)
+
+# ============================================
+# VERİ YÜKLEME
+# ============================================
+df = load_norm_data()
 
 # ============================================
 # SIDEBAR - FİLTRELER
@@ -241,39 +429,51 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+    # Okul Türü Filtresi
     st.markdown('<div class="filter-panel">', unsafe_allow_html=True)
     st.markdown('<p class="filter-title">🏫 Okul Türü</p>', unsafe_allow_html=True)
     okul_turleri = ['Tümü'] + sorted(df['okul_turu'].unique().tolist())
     selected_type = st.selectbox('', okul_turleri, label_visibility='collapsed')
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Branş Filtresi
     st.markdown('<div class="filter-panel">', unsafe_allow_html=True)
     st.markdown('<p class="filter-title">📚 Branş</p>', unsafe_allow_html=True)
+    
     if selected_type != 'Tümü':
         filtered_branches = df[df['okul_turu'] == selected_type]['brans_adi'].unique()
     else:
         filtered_branches = df['brans_adi'].unique()
+    
     branslar = ['Tümü'] + sorted(filtered_branches.tolist())
     selected_branch = st.selectbox('', branslar, label_visibility='collapsed')
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Norm Durumu Filtresi
     st.markdown('<div class="filter-panel">', unsafe_allow_html=True)
     st.markdown('<p class="filter-title">⚖️ Norm Durumu</p>', unsafe_allow_html=True)
     norm_durumlari = ['Tümü', 'Norm Fazlası', 'Norm Eksiği', 'Normal']
     selected_norm = st.selectbox('', norm_durumlari, label_visibility='collapsed')
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Derslik Sayısı Aralığı
     st.markdown('<div class="filter-panel">', unsafe_allow_html=True)
     st.markdown('<p class="filter-title">🏗️ Derslik Sayısı</p>', unsafe_allow_html=True)
     min_derslik = int(df['derslik_sayisi'].min())
     max_derslik = int(df['derslik_sayisi'].max())
-    derslik_range = st.slider('', min_derslik, max_derslik, (min_derslik, max_derslik), label_visibility='collapsed')
+    derslik_range = st.slider('', min_derslik, max_derslik, 
+                              (min_derslik, max_derslik), label_visibility='collapsed')
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Okul Arama
     st.markdown('<div class="filter-panel">', unsafe_allow_html=True)
     st.markdown('<p class="filter-title">🔎 Okul Ara</p>', unsafe_allow_html=True)
     school_search = st.text_input('', placeholder='Okul adı yazın...', label_visibility='collapsed')
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Hızlı İstatistikler
+    st.markdown("---")
+    st.markdown("### 📊 Hızlı İstatistikler")
     
     filtered_df = df.copy()
     if selected_type != 'Tümü':
@@ -287,18 +487,18 @@ with st.sidebar:
     filtered_df = filtered_df[(filtered_df['derslik_sayisi'] >= derslik_range[0]) & 
                               (filtered_df['derslik_sayisi'] <= derslik_range[1])]
     
-    st.markdown("---")
-    st.markdown("### 📊 Hızlı İstatistikler")
     col1, col2 = st.columns(2)
     with col1:
         st.metric("🏫 Okul", filtered_df['okul_id'].nunique())
     with col2:
         st.metric("👨‍🏫 Öğretmen", f"{filtered_df['mevcut_ogretmen'].sum():,}")
+    
     col3, col4 = st.columns(2)
     with col3:
         st.metric("🔴 Fazla", filtered_df['norm_fazlasi_sayisi'].sum())
     with col4:
         st.metric("🟢 Eksik", filtered_df['norm_eksigi_sayisi'].sum())
+        
 
 # ============================================
 # ANA HEADER
